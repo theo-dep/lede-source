@@ -975,7 +975,15 @@ config ATH79_MACH_WNR2000_V3
 	select ATH79_DEV_LEDS_GPIO
 	select ATH79_DEV_M25P80
 
-	config ATH79_MACH_WNR2200
+config ATH79_MACH_WNR2000_V5
+	bool "NETGEAR WNR2000 V5 board support (test kconfig.openwrt)"
+	select SOC_QCA953X
+	select ATH79_DEV_ETH
+	select ATH79_DEV_GPIO_BUTTONS
+	select ATH79_DEV_LEDS_GPIO
+	select ATH79_DEV_M25P80
+
+config ATH79_MACH_WNR2200
 	bool "NETGEAR WNR2200 board support"
 	select SOC_AR724X
 	select ATH79_DEV_AP9X_PCI if PCI

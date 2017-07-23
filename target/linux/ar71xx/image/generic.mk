@@ -219,6 +219,21 @@ define Device/wndr3700
   IMAGE/factory-NA.img = $$(IMAGE/default) | netgear-dni NA | check-size $$$$(IMAGE_SIZE)
 endef
 
+define Device/wnr2000v5
+  DEVICE_TITLE := NETGEAR WNR2000 V5
+  DEVICE_PACKAGES := kmod-spi-dev kmod-spi-gpio-custom kmod-block2mtd kmod-usb-core kmod-usb2 kmod-usb-ledtrig-usbport
+  BOARDNAME = WNR2000V5
+  NETGEAR_KERNEL_MAGIC = 0x32303030
+  NETGEAR_BOARD_ID = WNR2000V5
+  IMAGE_SIZE := 3904k
+  MTDPARTS = spi0.0:128k(u-boot)ro,3904k(firmware),64k(art)ro
+  IMAGES := kernel.bin rootfs.bin kernel-custom.bin
+  KERNEL := kernel-bin | patch-cmdline | lzma -d20
+  IMAGE/default = append-kernel | pad-to $$$$(BLOCKSIZE) | netgear-squashfs | append-rootfs | pad-rootfs
+  IMAGE/kernel-custom.bin = append-kernel | pad-to $$$$(BLOCKSIZE) | uImage lzma
+  IMAGE/kernel.bin = $$(IMAGE/default) | check-size $$$$(IMAGE_SIZE)
+endef
+
 define Device/wndr3700v2
 $(Device/wndr3700)
   DEVICE_TITLE := NETGEAR WNDR3700 v2
@@ -255,7 +270,7 @@ $(Device/wndr3800)
   NETGEAR_BOARD_ID = WNDRMACv2
 endef
 
-TARGET_DEVICES += wndr3700 wndr3700v2 wndr3800 wndr3800ch wndrmac wndrmacv2
+TARGET_DEVICES += wnr2000v5 wndr3700 wndr3700v2 wndr3800 wndr3800ch wndrmac wndrmacv2
 
 define Device/cap324
   DEVICE_TITLE := PowerCloud CAP324 Cloud AP
