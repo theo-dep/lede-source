@@ -219,19 +219,40 @@ define Device/wndr3700
   IMAGE/factory-NA.img = $$(IMAGE/default) | netgear-dni NA | check-size $$$$(IMAGE_SIZE)
 endef
 
+define Build/netgear-pad
+	dd if=/dev/zero bs=128 count=1 >> $@
+	dd if=$@ of=$@.new bs=$(1) conv=sync
+	head -c -128 $@.new > $@
+endef
+
+define Build/fake-uimage-footer
+	echo -n -e "\x27\x05\x19\x56" >> $@
+	echo -n -e "\x26\x02\x6c\xff" >> $@
+	dd if=/dev/zero bs=20 count=1 >> $@
+	echo -n -e "\x05\x05\x07\x00" >> $@
+	dd if=/dev/zero bs=32 count=1 >> $@
+endef
+
+define Build/unappend-zero
+	head -c -$(1) $@ > $@.new
+	mv $@.new $@
+endef
+
 define Device/wnr2000v5
   DEVICE_TITLE := NETGEAR WNR2000 V5
   DEVICE_PACKAGES := kmod-spi-dev kmod-spi-gpio-custom kmod-block2mtd kmod-usb-core kmod-usb2 kmod-usb-ledtrig-usbport kmod-gpio-nxp-74hc164
   BOARDNAME = WNR2000V5
   NETGEAR_KERNEL_MAGIC = 0x32303030
-  NETGEAR_BOARD_ID = WNR2000V5
+  NETGEAR_HW_ID = 29764648+4+0+32+2x2+0
+  NETGEAR_BOARD_ID = WNR2000v5
   IMAGE_SIZE := 3904k
   MTDPARTS = spi0.0:128k(u-boot)ro,3904k(firmware),64k(art)ro
-  IMAGES := kernel.bin dni
+  IMAGES := kernel.uImage dni.bin
   KERNEL := kernel-bin | patch-cmdline | lzma -d20
-  IMAGE/default = append-kernel | pad-to $$$$(BLOCKSIZE) | netgear-squashfs | append-rootfs | pad-rootfs
-  IMAGE/dni = $$(IMAGE/default) | netgear-dni | check-size $$$$(IMAGE_SIZE)
-  IMAGE/kernel.bin = $$(IMAGE/default) | check-size $$$$(IMAGE_SIZE)
+  KERNEL_INITRAMFS := $$(KERNEL) | netgear-pad $$(BLOCKSIZE) | uImage lzma | fake-uimage-footer
+  KERNEL_INITRAMFS_SUFFIX = $$(KERNEL_SUFFIX).uImage
+  IMAGE/kernel.uImage = append-kernel | netgear-pad $$$$(BLOCKSIZE) | uImage lzma | fake-uimage-footer
+  IMAGE/dni.bin = $$(IMAGE/kernel.uImage) | append-rootfs | pad-rootfs | netgear-dni | check-size $$$$(IMAGE_SIZE)
 endef
 
 define Device/wndr3700v2
