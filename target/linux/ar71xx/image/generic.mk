@@ -227,10 +227,10 @@ define Device/wnr2000v5
   NETGEAR_BOARD_ID = WNR2000V5
   IMAGE_SIZE := 3904k
   MTDPARTS = spi0.0:128k(u-boot)ro,3904k(firmware),64k(art)ro
-  IMAGES := kernel.bin rootfs.bin kernel-custom.bin
+  IMAGES := kernel.bin dni
   KERNEL := kernel-bin | patch-cmdline | lzma -d20
   IMAGE/default = append-kernel | pad-to $$$$(BLOCKSIZE) | netgear-squashfs | append-rootfs | pad-rootfs
-  IMAGE/kernel-custom.bin = append-kernel | pad-to $$$$(BLOCKSIZE) | uImage lzma
+  IMAGE/dni = $$(IMAGE/default) | netgear-dni | check-size $$$$(IMAGE_SIZE)
   IMAGE/kernel.bin = $$(IMAGE/default) | check-size $$$$(IMAGE_SIZE)
 endef
 
