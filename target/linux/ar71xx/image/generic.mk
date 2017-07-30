@@ -240,7 +240,7 @@ endef
 
 define Device/wnr2000v5
   DEVICE_TITLE := NETGEAR WNR2000 V5
-  DEVICE_PACKAGES := kmod-spi-dev kmod-spi-gpio-custom kmod-block2mtd kmod-usb-core kmod-usb2 kmod-usb-ledtrig-usbport kmod-gpio-nxp-74hc164
+  DEVICE_PACKAGES := kmod-block2mtd kmod-gpio-nxp-74hc164
   BOARDNAME = WNR2000V5
   NETGEAR_KERNEL_MAGIC = 0x32303030
   NETGEAR_HW_ID = 29764648+4+0+32+2x2+0
