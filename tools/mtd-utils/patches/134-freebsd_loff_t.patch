@@ -1,4 +1,4 @@
---- a/include/mtd/mtd-abi.h
+-- a/include/mtd/mtd-abi.h
 +++ b/include/mtd/mtd-abi.h
 @@ -171,9 +171,9 @@ struct otp_info {
  /* Get info about OOB modes (e.g., RAW, PLACE, AUTO) - legacy interface */

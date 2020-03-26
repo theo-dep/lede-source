@@ -1,0 +1,98 @@
+diff --git a/include/iwinfo.h b/include/iwinfo.h
+index 9b2ffd1..d035c9c 100644
+--- a/include/iwinfo.h
++++ b/include/iwinfo.h
+@@ -43,7 +43,9 @@ 
+ #define IWINFO_KMGMT_NONE    (1 << 0)
+ #define IWINFO_KMGMT_8021x   (1 << 1)
+ #define IWINFO_KMGMT_PSK     (1 << 2)
+-#define IWINFO_KMGMT_COUNT   3
++#define IWINFO_KMGMT_SAE     (1 << 3)
++#define IWINFO_KMGMT_OWE     (1 << 4)
++#define IWINFO_KMGMT_COUNT   5
+ 
+ #define IWINFO_AUTH_OPEN     (1 << 0)
+ #define IWINFO_AUTH_SHARED   (1 << 1)
+diff --git a/iwinfo_cli.c b/iwinfo_cli.c
+index dba7529..4a4727b 100644
+--- a/iwinfo_cli.c
++++ b/iwinfo_cli.c
+@@ -186,6 +186,12 @@  static char * format_enc_suites(int suites)
+ 	if (suites & IWINFO_KMGMT_8021x)
+ 		pos += sprintf(pos, "802.1X/");
+ 
++	if (suites & IWINFO_KMGMT_SAE)
++		pos += sprintf(pos, "SAE/");
++
++	if (suites & IWINFO_KMGMT_OWE)
++		pos += sprintf(pos, "OWE/");
++
+ 	if (!suites || (suites & IWINFO_KMGMT_NONE))
+ 		pos += sprintf(pos, "NONE/");
+ 
+@@ -229,6 +235,12 @@  static char * format_encryption(struct iwinfo_crypto_entry *c)
+ 		else if (c->wpa_version)
+ 		{
+ 			switch (c->wpa_version) {
++				case 4:
++					snprintf(buf, sizeof(buf), "WPA3 %s (%s)",
++						format_enc_suites(c->auth_suites),
++						format_enc_ciphers(c->pair_ciphers | c->group_ciphers));
++					break;
++
+ 				case 3:
+ 					snprintf(buf, sizeof(buf), "mixed WPA/WPA2 %s (%s)",
+ 						format_enc_suites(c->auth_suites),
+diff --git a/iwinfo_lua.c b/iwinfo_lua.c
+index bb43438..3d9d95e 100644
+--- a/iwinfo_lua.c
++++ b/iwinfo_lua.c
+@@ -89,6 +89,12 @@  static char * iwinfo_crypto_print_suites(int suites)
+ 	if (suites & IWINFO_KMGMT_8021x)
+ 		pos += sprintf(pos, "802.1X/");
+ 
++	if (suites & IWINFO_KMGMT_SAE)
++		pos += sprintf(pos, "SAE/");
++
++	if (suites & IWINFO_KMGMT_OWE)
++		pos += sprintf(pos, "OWE/");
++
+ 	if (!suites || (suites & IWINFO_KMGMT_NONE))
+ 		pos += sprintf(pos, "NONE/");
+ 
+@@ -130,6 +136,13 @@  static char * iwinfo_crypto_desc(struct iwinfo_crypto_entry *c)
+ 			else if (c->wpa_version)
+ 			{
+ 				switch (c->wpa_version) {
++					case 4:
++						sprintf(desc, "WPA3 %s (%s)",
++							iwinfo_crypto_print_suites(c->auth_suites),
++							iwinfo_crypto_print_ciphers(
++								c->pair_ciphers | c->group_ciphers));
++						break;
++
+ 					case 3:
+ 						sprintf(desc, "mixed WPA/WPA2 %s (%s)",
+ 							iwinfo_crypto_print_suites(c->auth_suites),
+diff --git a/iwinfo_nl80211.c b/iwinfo_nl80211.c
+index 200be28..cf86b05 100644
+--- a/iwinfo_nl80211.c
++++ b/iwinfo_nl80211.c
+@@ -1588,6 +1588,16 @@  static int nl80211_get_encryption(const char *ifname, char *buf)
+ 			if (strstr(wpa_key_mgmt, "EAP"))
+ 				c->auth_suites |= IWINFO_KMGMT_8021x;
+ 
++			if (strstr(wpa_key_mgmt, "SAE")){
++				c->auth_suites |= IWINFO_KMGMT_SAE;
++				c->wpa_version = 4;
++			}
++
++			if (strstr(wpa_key_mgmt, "OWE")){
++				c->auth_suites |= IWINFO_KMGMT_OWE;
++				c->wpa_version = 4;
++			}
++
+ 			if (strstr(wpa_key_mgmt, "NONE"))
+ 				c->auth_suites |= IWINFO_KMGMT_NONE;
+ 		}
+

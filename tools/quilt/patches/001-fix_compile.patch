@@ -15,4 +15,4 @@
 +	@touch $@
  
  compat_leftover := $(filter-out $(COMPAT),$(shell $(FIND) compat -type f -perm -0100))
- 
+
